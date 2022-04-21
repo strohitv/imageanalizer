@@ -1,8 +1,11 @@
 package tv.strohi.twitch.imageanalyzer.analyzer;
 
+import net.sourceforge.tess4j.ITessAPI;
+import net.sourceforge.tess4j.Tesseract;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
@@ -17,7 +20,8 @@ import java.util.List;
 
 @Component
 public class Analyzer {
-    private static List<BufferedImage> images = new ArrayList<>();
+//    private static List<BufferedImage> images = new ArrayList<>();
+    private static List<IIOImage> images = new ArrayList<>();
 
     public Analyzer() {
         Process process;
@@ -49,12 +53,38 @@ public class Analyzer {
             }).start();
 
             new Thread(() -> {
+                Tesseract tesseract = new Tesseract();
+                tesseract.setDatapath("tess4j");
+                tesseract.setLanguage("eng");
+//                tesseract.setPageSegMode(ITessAPI.TessPageSegMode.PSM_SINGLE_WORD);
+                tesseract.setPageSegMode(ITessAPI.TessPageSegMode.PSM_SPARSE_TEXT);
+//                tesseract.setOcrEngineMode(1);
+                tesseract.setOcrEngineMode(ITessAPI.TessOcrEngineMode.OEM_TESSERACT_ONLY);
+                tesseract.setTessVariable("user_defined_dpi", "71");
+
                 int number = 0;
                 try {
                     while (true) {
+                        if (finalProcess.getErrorStream().available() > 0) {
+                            finalProcess.getErrorStream().readNBytes(finalProcess.getErrorStream().available());
+                        }
+
                         if (images.size() > 0) {
-                            BufferedImage img = images.remove(0);
-                            ImageIO.write(img, "png", new File("images\\selfie_" + number + ".png"));
+                            IIOImage img = images.remove(0);
+//                            ImageIO.write(img, "png", new File("images\\selfie_" + number + ".png"));
+                            BufferedImage bufferedImage = (BufferedImage) img.getRenderedImage();
+//                            ImageIO.write(bufferedImage.getSubimage(905, 53, 109, 48), "png", new File("images\\aaa_selfie.png"));
+                            ImageIO.write(bufferedImage.getSubimage(905, 53, 109, 48), "png", new File("images\\aaa_selfie.png"));
+                            String result = tesseract.doOCR(bufferedImage.getSubimage(905, 53, 109, 48))
+                                    .trim()
+                                    .replace("'!", "9")
+                                    .replace("-", ":");
+
+//                            ImageIO.write(bufferedImage.getSubimage(894, 43, 129, 67), "png", new File("images\\aaa_selfie.png"));
+//                            String result = tesseract.doOCR(bufferedImage.getSubimage(894, 43, 129, 67)).trim();
+                            if (!result.isBlank()) {
+                                System.out.println(result);
+                            }
                             number++;
                         }
                     }
@@ -89,7 +119,8 @@ public class Analyzer {
                 finalProcess.getErrorStream().readNBytes(finalProcess.getErrorStream().available());
             }
 
-            BufferedImage image = reader.read(0);
+//            BufferedImage image = reader.read(0);
+            IIOImage image = reader.readAll(0, null);
             if (image == null) {
                 System.out.println("No more images to read, exiting.");
                 break;
