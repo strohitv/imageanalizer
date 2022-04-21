@@ -159,8 +159,7 @@ public class Analyzer {
             long bytesRead = imgStream.getStreamPosition();
 
             stream.reset();
-            stream.readNBytes((int) bytesRead);
-            System.out.println(bytesRead);
+            stream.skip(bytesRead);
         }
     }
 
