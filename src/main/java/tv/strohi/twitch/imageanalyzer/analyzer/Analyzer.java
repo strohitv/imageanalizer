@@ -56,7 +56,6 @@ public class Analyzer {
                             BufferedImage img = images.remove(0);
                             ImageIO.write(img, "png", new File("images\\selfie_" + number + ".png"));
                             number++;
-                            Thread.sleep(300);
                         }
                     }
                 } catch (Exception e) {
