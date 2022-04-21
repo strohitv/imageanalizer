@@ -26,7 +26,6 @@ import java.util.List;
 
 @Component
 public class Analyzer {
-    //    private static List<BufferedImage> images = new ArrayList<>();
     private static final List<IIOImage> images = new ArrayList<>();
 
     private final ObjectMapper mapper = new ObjectMapper();
@@ -47,10 +46,7 @@ public class Analyzer {
                         System.out.println(new String(finalProcess.getErrorStream().readNBytes(finalProcess.getErrorStream().available())));
                     }
 
-                    InputStream inputStream = finalProcess.getInputStream();
-                    //do whatever has to be done with inputStream
-
-                    readImages(inputStream, finalProcess);
+                    readImages(finalProcess.getInputStream(), finalProcess);
 
                     if (finalProcess.getErrorStream().available() > 0) {
                         System.out.println(new String(finalProcess.getErrorStream().readNBytes(finalProcess.getErrorStream().available())));
@@ -64,15 +60,10 @@ public class Analyzer {
                 Tesseract tesseract = new Tesseract();
                 tesseract.setDatapath("tess4j");
                 tesseract.setLanguage("eng");
-//                tesseract.setPageSegMode(ITessAPI.TessPageSegMode.PSM_SINGLE_WORD);
                 tesseract.setPageSegMode(ITessAPI.TessPageSegMode.PSM_SPARSE_TEXT);
-//                tesseract.setOcrEngineMode(1);
                 tesseract.setOcrEngineMode(ITessAPI.TessOcrEngineMode.OEM_TESSERACT_ONLY);
-//                tesseract.setTessVariable("user_defined_dpi", "213");
                 tesseract.setTessVariable("user_defined_dpi", "71");
 
-                int number = 0;
-//                boolean loadColors = true;
                 try {
                     while (true) {
                         if (finalProcess.getErrorStream().available() > 0) {
@@ -81,45 +72,27 @@ public class Analyzer {
 
                         if (images.size() > 0) {
                             IIOImage img = images.remove(0);
-//                            ImageIO.write(img, "png", new File("images\\selfie_" + number + ".png"));
                             BufferedImage bufferedImage = (BufferedImage) img.getRenderedImage();
-//                            ImageIO.write(bufferedImage.getSubimage(905, 53, 109, 48), "png", new File("images\\aaa_selfie.png"));
                             BufferedImage bufferedSubImage = bufferedImage.getSubimage(905, 53, 109, 48);
-//                            bufferedSubImage = Scalr.resize(bufferedSubImage, bufferedSubImage.getWidth() * 8, bufferedSubImage.getHeight() * 8);
 
-//                            ImageIO.write(bufferedSubImage, "png", new File("images\\aaa_selfie.png"));
-//                            ImageIO.write(bufferedImage, "png", new File("images\\aaab_selfie.png"));
                             String result = tesseract.doOCR(bufferedSubImage)
                                     .trim()
                                     .replace("'!", "9")
                                     .replace("-", ":")
                                     .replaceAll("[^0-9:]", "");
 
-//                            ImageIO.write(bufferedImage.getSubimage(894, 43, 129, 67), "png", new File("images\\aaa_selfie.png"));
-//                            String result = tesseract.doOCR(bufferedImage.getSubimage(894, 43, 129, 67)).trim();
                             if (!result.isBlank()) {
-
-//                                if (loadColors && Arrays.asList(new String[]{"5:00", "4:59", "4:58", "3:00", "2:59", "2:58"}).contains(result)) {
                                 if (result.matches("[0-9]:[0-9][0-9]")) {
                                     System.out.println(result);
 
                                     int[] ownColor = getPixelColor(bufferedImage, 575, 42);
                                     int[] enemyColor = getPixelColor(bufferedImage, 1085, 42);
-//                                    loadColors = false;
 
                                     ColorsBody body = new ColorsBody(ownColor, enemyColor);
 
                                     sendToBot(body);
                                 }
-//                                } else if (!loadColors && Arrays.asList(new String[]{"4:55", "4:54", "4:53", "4:52", "2:55", "2:54", "2:53", "2:52"}).contains(result)) {
-//                                    System.out.println(result);
-//                                    loadColors = true;
-//                                }
-
-                                // pixel eigene Farbe: 575, 42
-                                // pixel gegnerische Farbe: 1085, 42
                             }
-                            number++;
                         }
                     }
                 } catch (Exception e) {
@@ -167,7 +140,6 @@ public class Analyzer {
                 finalProcess.getErrorStream().readNBytes(finalProcess.getErrorStream().available());
             }
 
-//            BufferedImage image = reader.read(0);
             IIOImage image = reader.readAll(0, null);
             if (image == null) {
                 System.out.println("No more images to read, exiting.");
@@ -190,13 +162,9 @@ public class Analyzer {
         int red = (clr & 0x00ff0000) >> 16;
         int green = (clr & 0x0000ff00) >> 8;
         int blue = clr & 0x000000ff;
-//        String hex = String.format("#%02X%02X%02X", red, green, blue);
         System.out.printf("%d %d %d%n", red, green, blue);
 
         return new int[]{red, green, blue};
-//        System.out.println("Red Color value = " + red);
-//        System.out.println("Green Color value = " + green);
-//        System.out.println("Blue Color value = " + blue);
     }
 
     @Scheduled(initialDelay = 1000, fixedRate = 10000)
