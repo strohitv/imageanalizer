@@ -85,8 +85,8 @@ public class Analyzer {
                                 if (result.matches("[0-9]:[0-9][0-9]")) {
                                     System.out.println(result);
 
-                                    int[] ownColor = getPixelColor(bufferedImage, 575, 42);
-                                    int[] enemyColor = getPixelColor(bufferedImage, 1085, 42);
+                                    int[] ownColor = getPixelColor(bufferedImage, 576, 42);
+                                    int[] enemyColor = getPixelColor(bufferedImage, 1346, 42);
 
                                     ColorsBody body = new ColorsBody(ownColor, enemyColor);
 
