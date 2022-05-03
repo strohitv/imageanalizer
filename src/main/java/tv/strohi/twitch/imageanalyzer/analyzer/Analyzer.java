@@ -69,12 +69,13 @@ public class Analyzer {
 
                 Instant time = Instant.now();
                 int fps = 0;
+                String lastMessage = "";
 
                 try {
                     while (true) {
                         if (Instant.now().atZone(ZoneOffset.UTC).getSecond() != time.atZone(ZoneOffset.UTC).getSecond()) {
                             // new second
-                            System.out.printf("%d fps%n", fps);
+                            System.out.printf("%d fps - response (none = good): %s%n", fps, lastMessage.trim());
                             fps = 0;
                             time = Instant.now();
                         }
@@ -104,7 +105,7 @@ public class Analyzer {
 
                                     ColorsBody body = new ColorsBody(ownColor, enemyColor);
 
-                                    sendToBot(body);
+                                    lastMessage = sendToBot(body);
                                 }
                             }
                         }
@@ -118,7 +119,7 @@ public class Analyzer {
         }
     }
 
-    private void sendToBot(ColorsBody body) throws IOException {
+    private String sendToBot(ColorsBody body) throws IOException {
         URL url = new URL("http://192.168.178.32:8080/colors");
         URLConnection con = url.openConnection();
         HttpURLConnection http = (HttpURLConnection) con;
@@ -129,7 +130,8 @@ public class Analyzer {
         try (OutputStream os = http.getOutputStream()) {
             os.write(mapper.writeValueAsString(body).getBytes(StandardCharsets.UTF_8));
         }
-        // System.out.println(new String(http.getInputStream().readAllBytes()));
+
+        return new String(http.getInputStream().readAllBytes());
     }
 
     private static final int MAX_IMAGE_SIZE = Integer.MAX_VALUE;
