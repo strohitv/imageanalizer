@@ -20,6 +20,8 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -36,8 +38,9 @@ public class Analyzer {
             process = Runtime.getRuntime().exec(
                     "R:\\roh\\ffmpeg\\ffmpeg.exe -f dshow -rtbufsize 702000k -i video=\"OBS Virtual Camera\" -filter:v fps=2 -qscale:v 1 -vf scale=1920:1080 -f image2pipe -"
             );
-            for (String format : ImageIO.getReaderFormatNames())
-                System.out.println(format);
+//            for (String format : ImageIO.getReaderFormatNames()) {
+//                System.out.println(format);
+//            }
 
             Process finalProcess = process;
             new Thread(() -> {
@@ -64,8 +67,18 @@ public class Analyzer {
                 tesseract.setOcrEngineMode(ITessAPI.TessOcrEngineMode.OEM_TESSERACT_ONLY);
                 tesseract.setTessVariable("user_defined_dpi", "71");
 
+                Instant time = Instant.now();
+                int fps = 0;
+
                 try {
                     while (true) {
+                        if (Instant.now().atZone(ZoneOffset.UTC).getSecond() != time.atZone(ZoneOffset.UTC).getSecond()) {
+                            // new second
+                            System.out.printf("%d fps%n", fps);
+                            fps = 0;
+                            time = Instant.now();
+                        }
+
                         if (finalProcess.getErrorStream().available() > 0) {
                             finalProcess.getErrorStream().readNBytes(finalProcess.getErrorStream().available());
                         }
@@ -83,7 +96,8 @@ public class Analyzer {
 
                             if (!result.isBlank()) {
                                 if (result.matches("[0-9]:[0-9][0-9]")) {
-                                    System.out.println(result);
+                                    fps++;
+                                    // System.out.println(result);
 
                                     int[] ownColor = getPixelColor(bufferedImage, 576, 42);
                                     int[] enemyColor = getPixelColor(bufferedImage, 1346, 42);
@@ -115,7 +129,7 @@ public class Analyzer {
         try (OutputStream os = http.getOutputStream()) {
             os.write(mapper.writeValueAsString(body).getBytes(StandardCharsets.UTF_8));
         }
-        System.out.println(new String(http.getInputStream().readAllBytes()));
+        // System.out.println(new String(http.getInputStream().readAllBytes()));
     }
 
     private static final int MAX_IMAGE_SIZE = Integer.MAX_VALUE;
@@ -162,7 +176,7 @@ public class Analyzer {
         int red = (clr & 0x00ff0000) >> 16;
         int green = (clr & 0x0000ff00) >> 8;
         int blue = clr & 0x000000ff;
-        System.out.printf("%d %d %d%n", red, green, blue);
+        // System.out.printf("%d %d %d%n", red, green, blue);
 
         return new int[]{red, green, blue};
     }
