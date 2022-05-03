@@ -34,7 +34,7 @@ public class Analyzer {
         Process process;
         try {
             process = Runtime.getRuntime().exec(
-                    "R:\\roh\\ffmpeg\\ffmpeg.exe -f dshow -rtbufsize 702000k -i video=\"OBS Virtual Camera\" -filter:v fps=2 -qscale:v 1 -f image2pipe -"
+                    "R:\\roh\\ffmpeg\\ffmpeg.exe -f dshow -rtbufsize 702000k -i video=\"OBS Virtual Camera\" -filter:v fps=2 -qscale:v 1 -vf scale=1920:1080 -f image2pipe -"
             );
             for (String format : ImageIO.getReaderFormatNames())
                 System.out.println(format);
