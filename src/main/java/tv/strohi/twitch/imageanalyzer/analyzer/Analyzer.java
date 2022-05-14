@@ -28,11 +28,6 @@ public class Analyzer {
 
     public Analyzer() {
         try {
-//            process = Runtime.getRuntime().exec(
-//                    "R:\\roh\\ffmpeg\\ffmpeg.exe -f dshow -rtbufsize 702000k -i video=\"OBS Virtual Camera\" -filter:v fps=2 -qscale:v 1 -vf scale=1920:1080 -f image2pipe -"
-//            );
-
-
             new Thread(() -> {
                 try {
                     while (true) {
@@ -72,7 +67,6 @@ public class Analyzer {
             tesseract.setTessVariable("user_defined_dpi", "71");
 
             Instant time = Instant.now();
-            int fps = 0;
             int imageNr = 0;
             String lastMessage = "";
 
@@ -81,7 +75,6 @@ public class Analyzer {
                     if (Instant.now().isAfter(time.plus(10, ChronoUnit.SECONDS))) {
                         // new second
                         System.out.printf("I'm still alive - list size: %d - response (none = good): %s%n", images.size(), lastMessage.trim());
-                        fps = 0;
                         time = Instant.now();
                     }
 
@@ -104,10 +97,6 @@ public class Analyzer {
 
                         if (!result.isBlank()) {
                             if (result.matches("[0-9]:[0-9][0-9]")) {
-                                fps++;
-                                // System.out.println(result);
-
-
                                 int[] ownColor = getPixelColor(bufferedImage, 576, 42);
                                 int[] enemyColor = getPixelColor(bufferedImage, 1346, 42);
 
