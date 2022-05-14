@@ -1,15 +1,11 @@
 package tv.strohi.twitch.imageanalyzer;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.scheduling.annotation.EnableScheduling;
+import tv.strohi.twitch.imageanalyzer.analyzer.Analyzer;
 
-@SpringBootApplication
-@EnableScheduling
 public class ImageanalyzerApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(ImageanalyzerApplication.class, args);
+		new Analyzer();
 	}
 
 }
