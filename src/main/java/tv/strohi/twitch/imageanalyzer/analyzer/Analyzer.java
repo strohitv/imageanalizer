@@ -140,14 +140,21 @@ public class Analyzer {
         return new String(http.getInputStream().readAllBytes());
     }
 
+    private static Instant lastQueued = Instant.now();
+    private static String lastResult = "";
     private static String isAvailable() throws IOException {
-        URL url = new URL("http://192.168.178.32:8080/colors/active");
-        URLConnection con = url.openConnection();
-        HttpURLConnection http = (HttpURLConnection) con;
-        http.setRequestMethod("GET"); // PUT is another valid option
-        http.connect();
+        if (lastResult.isBlank() || Instant.now().isAfter(lastQueued.plus(2, ChronoUnit.SECONDS))) {
+            URL url = new URL("http://192.168.178.32:8080/colors/active");
+            URLConnection con = url.openConnection();
+            HttpURLConnection http = (HttpURLConnection) con;
+            http.setRequestMethod("GET"); // PUT is another valid option
+            http.connect();
 
-        return new String(http.getInputStream().readAllBytes());
+            lastResult = new String(http.getInputStream().readAllBytes());
+            lastQueued = Instant.now();
+        }
+
+        return lastResult;
     }
 
     private static final int MAX_IMAGE_SIZE = Integer.MAX_VALUE;
